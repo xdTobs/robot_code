@@ -15,13 +15,13 @@ PORT = 65438  # Port to listen on (non-privileged ports are > 1023)
 print("HOST", HOST)
 print("PORT", PORT)
 
-robot_number = 1 
+robot = RobotFactory.create_robot(Prototypes.TOWER)
 
-robot_type = Prototypes.from_int(robot_number)
-robot = RobotFactory.create_robot(robot_type)
+print("robot",robot)
 
 print("motor orientation forward", robot.motor_orientation_forward)
 def connect_to_server():
+    print("Ready to connect to server")
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind((HOST, PORT))
@@ -31,13 +31,9 @@ def connect_to_server():
     return conn, addr, s
 
 
-def handle_connection(conn, addr, s):
-    print("Ready to connect to server")
+def handle_connection(conn, addr):
     print("Battery percentage: ", get_battery_status())
 
-    robot_number = 1
-    robot_type = Prototypes.from_int(robot_number)
-    robot = RobotFactory.create_robot(robot_type)
 
     print("motor orientation forward", robot.motor_orientation_forward)
     print('Connected to server by addr:', addr)
@@ -45,10 +41,11 @@ def handle_connection(conn, addr, s):
     try:
         while True:
             ready = select.select([conn], [], [], 0.1)[0]
-            robot.avoid_obstacle()
+            #robot.avoid_obstacle()
 
             if ready:
                 data = conn.recv(1024)
+                print("Data received", data)
                 if not data:
                     raise ConnectionError("Connection lost")
                 key_value_pair = json.loads(data.decode())
@@ -58,16 +55,19 @@ def handle_connection(conn, addr, s):
                     value = float(value)
                 robot.interpret_command_from_image_server(command, value, conn)
     except Exception as e:
-        print("Error executing command", e)
-        s.close()
+        print("Exception", e)
         return False
-    return True
-    
+
 if __name__ == '__main__':
     while True:
         conn, addr, s = connect_to_server()
-        while not handle_connection(conn, addr, s):
+        try:
+            if handle_connection(conn, addr):
+                break
+        except Exception as e:
+            print("Error occurred: ", e)
             print("Attempting to reconnect...")
-            sleep(5) 
-        else:
-            break
+            sleep(5)
+        finally:
+            conn.close()
+            s.close()
