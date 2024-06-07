@@ -1,5 +1,5 @@
 from enum import Enum
-from ev3dev2.motor import OUTPUT_C, SpeedPercent, MediumMotor
+from ev3dev2.motor import OUTPUT_C, SpeedPercent, LargeMotor
 from robot import BaseRobot,EACTION
 
 class EACTIONWATERMILL(Enum):
@@ -13,7 +13,7 @@ class WaterMill(BaseRobot):
     avoidance_distance = 20
 
     try:
-        motor_hatch = MediumMotor(OUTPUT_C)
+        motor_hatch = LargeMotor(OUTPUT_C)
     except Exception as e:
         print("Error initializing Motors", e)
     

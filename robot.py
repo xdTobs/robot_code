@@ -53,11 +53,11 @@ class BaseRobot:
         except Exception as e:
             print("Error initializing Motors", e)
             
-        try:
-            self.dist_sensor = UltrasonicSensor()
-            self.mfdiff.gyro = GyroSensor()
-        except Exception as e:
-            print("Error initializing Sensors", e)
+        #try:
+            #self.dist_sensor = UltrasonicSensor()
+            #self.mfdiff.gyro = GyroSensor()
+        #except Exception as e:
+            #print("Error initializing Sensors", e)
         
         if self.mfdiff.gyro:
             self.mfdiff.gyro.calibrate()

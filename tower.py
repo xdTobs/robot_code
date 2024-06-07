@@ -1,4 +1,4 @@
-from ev3dev2.motor import OUTPUT_C, MediumMotor, SpeedPercent
+from ev3dev2.motor import OUTPUT_C, LargeMotor, SpeedPercent
 from enum import Enum
 from robot import EACTION, BaseRobot
 
@@ -25,7 +25,7 @@ class Tower(BaseRobot):
     }
  
     try:
-        belt_motor = MediumMotor(OUTPUT_C)
+        belt_motor = LargeMotor(OUTPUT_C)
     except Exception as e:
         print("Error initializing motors", e)
 
