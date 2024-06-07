@@ -2,7 +2,7 @@
 import socket
 import select
 from time import sleep
-from battery import get_battery_status
+from utils.battery import get_battery_status
 from robot_factory import RobotFactory
 from prototype_enum import Prototypes
 import json
