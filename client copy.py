@@ -30,14 +30,14 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     conn.setblocking(False)
 
     with conn:
-        print("Connected to server by addr:", addr)
+        print('Connected to server by addr:', addr)
         conn.sendall("done".encode())
 
         while True:
 
             ready = select.select([conn], [], [], 0.1)[0]
-
-            robot.autonomous_commands.avoid_obstacle()
+            
+            robot.avoid_obstacle()
 
             if ready:
                 try:
@@ -47,12 +47,15 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     key_value_pair = json.loads(data.decode())
                     command = key_value_pair.get("command")
                     value = key_value_pair.get("value")
-                    if value is not None:
+                    if value != None:
                         value = float(value)
+                    
+                    
+                    robot.interpret_command_from_image_server(command,value, conn)
 
-                    robot.server_commands.interpret_command_from_image_server(
-                        command, value, conn
-                    )
+                    #command = data.decode("utf-8")
+                    #print("Command received:", command)
+                    #robot.interpret_command_from_key(command)
                 except Exception as e:
                     print("Error executing command", e)
 conn.close()
