@@ -7,7 +7,7 @@ from robot_factory import RobotFactory
 from prototype_enum import Prototypes
 import json
 
-HOST = "172.20.10.3"  # Standard loopback interface address (localhost)
+HOST = "172.20.10.4"  # PC IP
 # HOST = "localhost"
 PORT = 65438  # Port to listen on (non-privileged ports are > 1023)
 
