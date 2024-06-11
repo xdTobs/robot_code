@@ -35,6 +35,7 @@ class BaseRobot:
     # True for normal configuration, False for inverted configuration
     motor_orientation_forward = True
     use_gyro = False
+    gyro_sensor = None
    
 
     def __init__(self, wheel_distance, avoidance_distance, default_speed, action_map) :
@@ -42,7 +43,7 @@ class BaseRobot:
         self.avoidance_distance = avoidance_distance
         self.default_speed = default_speed
         self.update_action_map(action_map)
-    
+        
         self.sound = Sound()
         
         try:
@@ -53,15 +54,16 @@ class BaseRobot:
         except Exception as e:
             print("Error initializing Motors", e)
             
-        #try:
+        try:
             #self.dist_sensor = UltrasonicSensor()
-            #self.mfdiff.gyro = GyroSensor()
-        #except Exception as e:
-            #print("Error initializing Sensors", e)
+            self.mfdiff.gyro = GyroSensor()
+        except Exception as e:
+            print("Error initializing Sensors", e)
         
         if self.mfdiff.gyro:
             self.mfdiff.gyro.calibrate()
             self.use_gyro = True
+            self.gyro_sensor = GyroSensor()
             print("Gyro calibrated")
         else:
             print("Gyro not calibrated")
@@ -75,11 +77,11 @@ class BaseRobot:
     def move_backward(self):
         self.steering.on(0, SpeedPercent(-100))
 
-    def turn_left(self, speed):
-        self.mfdiff.turn_left(SpeedPercent(speed), self.turn_degrees, use_gyro=self.use_gyro)
+    def turn_left(self, speed,degrees=90):
+        self.mfdiff.turn_left(SpeedPercent(speed), degrees, use_gyro=self.use_gyro)
 
-    def turn_right(self, speed):
-        self.mfdiff.turn_right(SpeedPercent(speed), self.turn_degrees,use_gyro=self.use_gyro)
+    def turn_right(self, speed,degrees=90):
+        self.mfdiff.turn_right(SpeedPercent(speed), degrees,use_gyro=self.use_gyro)
 
     def stop(self):
         self.mfdiff.stop()
@@ -105,40 +107,41 @@ class BaseRobot:
         else:
             print("Invalid command")
             
-    def get_information(self):
+    def get_information(self) -> None:
         print("Robot information")
         print("Max speed", self.steering.max_speed)
         print("Min speed", self.steering.is_running)
+        if self.use_gyro: print("Gyro",self.gyro_sensor.angle_and_rate)
         
-    def move_from_image_server(self, distance_mm, socket):
-        #self.mfdiff.turn_degrees(SpeedPercent(100), degrees, use_gyro=self.use_gyro)
-        #self.get_information()
-        self.mfdiff.on_for_distance(speed = SpeedPercent(-100), distance_mm = distance_mm)
+    def move_from_image_server(self, distance_mm :int, socket, speedPercentage: int) -> None:
+        self.mfdiff.on_for_distance(speed = SpeedPercent(speedPercentage), distance_mm = distance_mm)
+        self.get_information()
         self.mfdiff.wait_until_not_moving()
         socket.sendall("done".encode())
 
         
     
-    def turn_from_image_server(self, degrees, socket):
+    def turn_from_image_server(self, degrees :float, socket,speedPercentage: int) -> None:
         if degrees is None or degrees == 0 or degrees == 360:
             socket.sendall("done".encode())
             return
 
-        self.mfdiff.turn_degrees(SpeedPercent(100), degrees)
+        self.mfdiff.turn_degrees(SpeedPercent(speedPercentage), degrees, use_gyro=False)
+        self.get_information()
         self.mfdiff.wait_until_not_moving()
         socket.sendall("done".encode())
 
 
     
-    def interpret_command_from_image_server(self, command, value, socket):
+    def interpret_command_from_image_server(self, command:str, value, socket,speedPercentage = 100):
         if command == "move":
             if value:
-                self.move_from_image_server(value, socket)
+                self.move_from_image_server(value, socket, speedPercentage)
             else:
                 print("Invalid distance")
         elif command == "turn":
             
-                self.turn_from_image_server(value, socket)
+                self.turn_from_image_server(value, socket,speedPercentage)
             
         elif command == "test-drive":
             self.test_drive()
@@ -151,9 +154,9 @@ class BaseRobot:
     
     def test_drive(self):
         print("Wheel distance", self.wheel_distance)
-        self.mfdiff.on_arc_left(SpeedPercent(-50), 128.0, 400)
+        self.mfdiff.on_arc_left(SpeedPercent(50), 128.0, 400)
         # Enable odometry
-        #self.mfdiff.odometry_start()
+        self.mfdiff.odometry_start()
 
         # Use odometry to drive to specific coordinates
         #self.mfdiff.on_to_coordinates(SpeedPercent(-40), 300, 300)
@@ -165,7 +168,7 @@ class BaseRobot:
         #self.mfdiff.turn_to_angle(SpeedPercent(-40), 90)
 
         # Disable odometry
-        #self.mfdiff.odometry_stop()
+        self.mfdiff.odometry_stop()
     
     def avoid_obstacle(self):
         if self.dist_sensor:    

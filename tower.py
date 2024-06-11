@@ -1,4 +1,4 @@
-from ev3dev2.motor import OUTPUT_C, LargeMotor, SpeedPercent
+from ev3dev2.motor import OUTPUT_C,OUTPUT_D, LargeMotor, SpeedPercent,MoveSteering
 from enum import Enum
 from robot import EACTION, BaseRobot
 
@@ -11,7 +11,7 @@ class ETOWER_ACTION(Enum):
 
 class Tower(BaseRobot):
     
-    wheel_distance = 11
+    wheel_distance = 25
     avoidance_distance = 20
     default_speed = 100
     motor_orientation_forward = False
@@ -25,7 +25,9 @@ class Tower(BaseRobot):
     }
  
     try:
-        belt_motor = LargeMotor(OUTPUT_C)
+        belt_motor = MoveSteering(OUTPUT_C,OUTPUT_D)
+        
+        
     except Exception as e:
         print("Error initializing motors", e)
 
@@ -40,7 +42,7 @@ class Tower(BaseRobot):
         super().interpret_command_from_image_server(command, value, socket)
 
         if command == "belt":
-            self.belt_motor.on(SpeedPercent(value))
+            self.belt_motor.on(0,SpeedPercent(value))
         elif command == "beltstop":
            self.belt_motor.off()
         
