@@ -38,11 +38,11 @@ class Tower(BaseRobot):
 
 # Overwriting base methods from robot:
 
-    def interpret_command_from_image_server(self, command, value, socket):
-        super().interpret_command_from_image_server(command, value, socket)
+    def interpret_command_from_image_server(self, command, value, socket,speedPercentage):
+        super().interpret_command_from_image_server(command, value, socket,speedPercentage)
 
         if command == "belt":
-            self.belt_motor.on(0,SpeedPercent(value))
+            self.belt_motor.on(0,SpeedPercent(speedPercentage))
         elif command == "beltstop":
            self.belt_motor.off()
         

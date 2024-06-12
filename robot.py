@@ -55,7 +55,7 @@ class BaseRobot:
             print("Error initializing Motors", e)
             
         try:
-            #self.dist_sensor = UltrasonicSensor()
+            self.dist_sensor = UltrasonicSensor()
             self.mfdiff.gyro = GyroSensor()
         except Exception as e:
             print("Error initializing Sensors", e)
@@ -114,7 +114,7 @@ class BaseRobot:
         if self.use_gyro: print("Gyro",self.gyro_sensor.angle_and_rate)
         
     def move_from_image_server(self, distance_mm :int, socket, speedPercentage: int) -> None:
-        self.mfdiff.on_for_distance(speed = SpeedPercent(speedPercentage), distance_mm = distance_mm)
+        self.mfdiff.on_for_distance(speed = SpeedPercent(speedPercentage), distance_mm = distance_mm,brake=False)
         self.get_information()
         self.mfdiff.wait_until_not_moving()
         socket.sendall("done".encode())
@@ -126,7 +126,7 @@ class BaseRobot:
             socket.sendall("done".encode())
             return
 
-        self.mfdiff.turn_degrees(SpeedPercent(speedPercentage), degrees, use_gyro=False)
+        self.mfdiff.turn_degrees(SpeedPercent(speedPercentage), degrees, use_gyro=False,brake=False)
         self.get_information()
         self.mfdiff.wait_until_not_moving()
         socket.sendall("done".encode())
@@ -136,12 +136,11 @@ class BaseRobot:
     def interpret_command_from_image_server(self, command:str, value, socket,speedPercentage = 100):
         if command == "move":
             if value:
-                self.move_from_image_server(value, socket, speedPercentage)
+                self.move_from_image_server(distance_mm=value, socket=socket, speedPercentage=speedPercentage)
             else:
                 print("Invalid distance")
         elif command == "turn":
-            
-                self.turn_from_image_server(value, socket,speedPercentage)
+                self.turn_from_image_server(degrees=value, socket=socket,speedPercentage=speedPercentage)
             
         elif command == "test-drive":
             self.test_drive()

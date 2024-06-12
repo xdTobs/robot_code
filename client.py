@@ -7,7 +7,7 @@ from robot_factory import RobotFactory
 from prototype_enum import Prototypes
 import json
 
-HOST = "172.20.10.3"  # PC IP
+HOST = "172.20.10.3"  # ROBOT IP
 # HOST = "localhost"
 PORT = 65438  # Port to listen on (non-privileged ports are > 1023)
 
@@ -56,15 +56,14 @@ def handle_connection(conn, addr):
                 #key_value_pair = json.loads(data)
                 try:
                     command = key_value_pair.get("command")
-                    cmdValue = key_value_pair.get("value")
+                    value = key_value_pair.get("value")
                     speedPercentage = key_value_pair.get("speedPercentage")
-                    
                 except Exception as e:
                     print("Could not parse data")
                     continue
-                if cmdValue is not None:
-                    cmdValue = float(cmdValue)
-                robot.interpret_command_from_image_server(command, cmdValue, conn,speedPercentage)
+                if value is not None:
+                    value = float(value)
+                robot.interpret_command_from_image_server(command, value, conn,speedPercentage)
     except Exception as e:
         print("Exception", e)
         return False
@@ -77,6 +76,7 @@ if __name__ == '__main__':
                 break
         except Exception as e:
             robot.stop()
+            robot.belt_motor.on_for_seconds(0, 255, 3,block=False)
             robot.belt_motor.off()
             print("Error occurred: ", e)
             print("Attempting to reconnect...")
