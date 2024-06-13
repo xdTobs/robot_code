@@ -1,8 +1,9 @@
 from ev3dev2.motor import OUTPUT_A, OUTPUT_B, SpeedPercent, MoveDifferential, MoveSteering
 from ev3dev2.sensor.lego import UltrasonicSensor, GyroSensor
-from ev3dev2.wheel import EV3Tire
-from enum import Enum
+from ev3dev2.wheel import EV3Tire, Wheel
+from ev3dev2.led import Leds
 from ev3dev2.sound import Sound
+from enum import Enum
 from time import sleep
 
 
@@ -13,6 +14,11 @@ class EACTION(Enum):
     LEFT = "LEFT"
     RIGHT = "RIGHT"
 
+
+class smallTire(Wheel):
+    def __init__(self):
+        Wheel.__init__(self, 30.5, 14.0)
+        
 
 class BaseRobot:
 
@@ -36,18 +42,28 @@ class BaseRobot:
     motor_orientation_forward = True
     use_gyro = False
     gyro_sensor = None
-   
+    leds = None   
 
     def __init__(self, wheel_distance, avoidance_distance, default_speed, action_map) :
         self.wheel_distance = wheel_distance
         self.avoidance_distance = avoidance_distance
         self.default_speed = default_speed
         self.update_action_map(action_map)
-        
+        self.leds = Leds()
         self.sound = Sound()
         
         try:
             print("wheel distance", self.wheel_distance)
+            
+
+            tire = smallTire()
+            
+
+            # calculate the number of rotations needed to travel forward 500 mm
+            #rotations_for_500mm = 500 / tire.circumference_mm
+            
+            #print("Rotations for 500mm", rotations_for_500mm)
+            
             self.mfdiff = MoveDifferential(OUTPUT_A, OUTPUT_B, EV3Tire, float(self.STUD_MM) * float(self.wheel_distance))
             self.steering = MoveSteering(OUTPUT_A, OUTPUT_B)
             

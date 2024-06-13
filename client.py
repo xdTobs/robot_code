@@ -7,7 +7,7 @@ from robot_factory import RobotFactory
 from prototype_enum import Prototypes
 import json
 
-HOST = "172.20.10.3"  # ROBOT IP
+HOST = "172.20.10.5"  # ROBOT IP
 # HOST = "localhost"
 PORT = 65438  # Port to listen on (non-privileged ports are > 1023)
 
@@ -23,6 +23,8 @@ print("motor orientation forward", robot.motor_orientation_forward)
 def connect_to_server():
     print("Ready to connect to server")
     robot.sound.tone([(1000, 500, 500)])
+    robot.leds.animate_police_lights('RED','GREEN', sleeptime=0.5, block=False)
+    #robot.sound.play_file('sounds/imperial_march.wav', play_type=2)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind((HOST, PORT))
