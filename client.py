@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-import socket
 import select
 from time import sleep
 from utils.battery import get_battery_status
 from robot_factory import RobotFactory
 from prototype_enum import Prototypes
 import json
+import socket
 
-HOST = "172.20.10.5"  # ROBOT IP
-# HOST = "localhost"
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.connect(("8.8.8.8", 80))
+print(s.getsockname()[0])
+HOST = s.getsockname()[0]
 PORT = 65438  # Port to listen on (non-privileged ports are > 1023)
+s.close()
 
 
 print("HOST", HOST)
@@ -17,9 +20,11 @@ print("PORT", PORT)
 
 robot = RobotFactory.create_robot(Prototypes.TOWER)
 
-print("robot",robot)
+print("robot", robot)
 
 print("motor orientation forward", robot.motor_orientation_forward)
+
+
 def connect_to_server():
     print("Ready to connect to server")
     robot.sound.tone([(1000, 500, 500)])
@@ -37,12 +42,12 @@ def connect_to_server():
 def handle_connection(conn, addr):
     print("Battery percentage: ", get_battery_status())
     print("motor orientation forward", robot.motor_orientation_forward)
-    print('Connected to server by addr:', addr)
+    print("Connected to server by addr:", addr)
 
     try:
         while True:
             ready = select.select([conn], [], [], 0.1)[0]
-            #robot.avoid_obstacle()
+            # robot.avoid_obstacle()
 
             if ready:
                 data = conn.recv(4000)
@@ -55,7 +60,7 @@ def handle_connection(conn, addr):
                     if i != len(data) - 1:
                         data[i] = data[i] + "}"
                     key_value_pair = json.loads(data[i])
-                #key_value_pair = json.loads(data)
+                # key_value_pair = json.loads(data)
                 try:
                     command = key_value_pair.get("command")
                     value = key_value_pair.get("value")
@@ -65,12 +70,15 @@ def handle_connection(conn, addr):
                     continue
                 if value is not None:
                     value = float(value)
-                robot.interpret_command_from_image_server(command, value, conn,speedPercentage)
+                robot.interpret_command_from_image_server(
+                    command, value, conn, speedPercentage
+                )
     except Exception as e:
         print("Exception", e)
         return False
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     while True:
         conn, addr, s = connect_to_server()
         try:
@@ -78,7 +86,7 @@ if __name__ == '__main__':
                 break
         except Exception as e:
             robot.stop()
-            robot.belt_motor.on_for_seconds(0, 255, 3,block=False)
+            robot.belt_motor.on_for_seconds(0, 255, 3, block=False)
             robot.belt_motor.off()
             print("Error occurred: ", e)
             print("Attempting to reconnect...")
