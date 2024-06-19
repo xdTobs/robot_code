@@ -6,6 +6,8 @@ from robot_factory import RobotFactory
 from prototype_enum import Prototypes
 import json
 import socket
+import traceback
+import time
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(("8.8.8.8", 80))
@@ -41,29 +43,42 @@ def handle_connection(conn, addr):
     print("Battery percentage: ", get_battery_status())
     print("motor orientation forward", robot.motor_orientation_forward)
     print("Connected to server by addr:", addr)
-
+    start_time = time.time()
     try:
         while True:
             ready = select.select([conn], [], [], 0.1)[0]
             # robot.avoid_obstacle()
 
             if ready:
-                data = conn.recv(4000)
+                #time for last iteration:
+                print("Time for last iteration: ", time.time() - start_time)
+                start_time = time.time()
+                data = conn.recv(100000)
                 print("Data received", data)
                 data = data.decode()
                 data = data.split("}{")
-                for i in range(len(data)):
-                    if i != 0:
-                        data[i] = "{" + data[i]
-                    if i != len(data) - 1:
-                        data[i] = data[i] + "}"
-                    key_value_pair = json.loads(data[i])
+                try:
+                    if len(data) == 1:
+                        key_value_pair = json.loads(data[0])
+                    elif len(data) == 2:
+                        data[0] = data[0] + "}"
+                        key_value_pair = json.loads(data[0])
+                    else:
+                        data[1] = "{" + data[1] + "}"
+                        key_value_pair = json.loads(data[1])
+                        
+                except Exception as e:
+                    key_value_pair = {}
+                    traceback.print_exc()
+                    
+                    
                 # key_value_pair = json.loads(data)
                 try:
                     command = key_value_pair.get("command")
                     value = key_value_pair.get("value")
                     speedPercentage = key_value_pair.get("speedPercentage")
                 except Exception as e:
+                    traceback.print_exc()
                     print("Could not parse data")
                     continue
                 if value is not None:
@@ -72,6 +87,7 @@ def handle_connection(conn, addr):
                     command, value, conn, speedPercentage
                 )
     except Exception as e:
+        traceback.print_exc()
         print("Exception", e)
         return False
 

@@ -27,7 +27,7 @@ class BaseRobot:
     STUD_MM = 8
     wheel_distance = 0
     default_speed = 250
-    mdiff = None
+    mdiff = None 
     steering = None
     dist_sensor = None
     avoidance_distance = 15
@@ -114,9 +114,9 @@ class BaseRobot:
         if self.use_gyro: print("Gyro",self.gyro_sensor.angle_and_rate)
         
     def move_from_image_server(self, distance_mm :int, socket, speedPercentage: int) -> None:
-        self.mfdiff.on_for_distance(speed = SpeedPercent(speedPercentage), distance_mm = distance_mm,brake=False)
+        self.mfdiff.on_for_distance(speed = SpeedPercent(speedPercentage), distance_mm = distance_mm,brake=False,block=False)
         self.get_information()
-        self.mfdiff.wait_until_not_moving()
+        #self.mfdiff.wait_until_not_moving()
         socket.sendall("done".encode())
         
     
@@ -130,9 +130,9 @@ class BaseRobot:
             socket.sendall("done".encode())
             return
 
-        self.mfdiff.turn_degrees(SpeedPercent(speedPercentage), degrees, use_gyro=False,brake=False)
+        self.mfdiff.turn_degrees(SpeedPercent(speedPercentage), degrees, use_gyro=False,brake=False,block=False)
         self.get_information()
-        self.mfdiff.wait_until_not_moving()
+        #self.mfdiff.wait_until_not_moving()
         socket.sendall("done".encode())
 
 
