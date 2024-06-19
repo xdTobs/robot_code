@@ -118,6 +118,10 @@ class BaseRobot:
         self.get_information()
         self.mfdiff.wait_until_not_moving()
         socket.sendall("done".encode())
+        
+    
+    def move_corrected(self, steering: int, speedPercentage: int) -> None:
+        self.steering.on(steering, SpeedPercent(speedPercentage))
 
         
     
@@ -141,7 +145,8 @@ class BaseRobot:
                 print("Invalid distance")
         elif command == "turn":
                 self.turn_from_image_server(degrees=value, socket=socket,speedPercentage=speedPercentage)
-            
+        elif command == "move-corrected":
+                self.move_corrected(steering=value, speedPercentage=speedPercentage)
         elif command == "test-drive":
             self.test_drive()
         elif command == "stop":
