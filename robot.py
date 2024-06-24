@@ -27,7 +27,7 @@ class BaseRobot:
     STUD_MM = 8
     wheel_distance = 0
     default_speed = 250
-    mdiff = None 
+    mfdiff = None 
     steering = None
     dist_sensor = None
     avoidance_distance = 15
@@ -55,7 +55,7 @@ class BaseRobot:
             print("Error initializing Motors", e)
             
         try:
-            self.dist_sensor = UltrasonicSensor()
+            #self.dist_sensor = UltrasonicSensor()
             self.mfdiff.gyro = GyroSensor()
         except Exception as e:
             print("Error initializing Sensors", e)
@@ -63,7 +63,7 @@ class BaseRobot:
         if self.mfdiff.gyro:
             self.mfdiff.gyro.calibrate()
             self.use_gyro = True
-            self.gyro_sensor = GyroSensor()
+           #self.gyro_sensor = GyroSensor()
             print("Gyro calibrated")
         else:
             print("Gyro not calibrated")
@@ -115,12 +115,14 @@ class BaseRobot:
         
     def move_from_image_server(self, distance_mm :int, socket, speedPercentage: int) -> None:
         self.mfdiff.on_for_distance(speed = SpeedPercent(speedPercentage), distance_mm = distance_mm,brake=False,block=False)
-        self.get_information()
+        print("Moving", distance_mm, "speed", speedPercentage)
+        #self.get_information()
         #self.mfdiff.wait_until_not_moving()
         socket.sendall("done".encode())
         
     
     def move_corrected(self, steering: int, speedPercentage: int) -> None:
+        print("Moving corrected", steering, "speed", speedPercentage)
         self.steering.on(steering, SpeedPercent(speedPercentage))
 
         
@@ -130,8 +132,10 @@ class BaseRobot:
             socket.sendall("done".encode())
             return
 
-        self.mfdiff.turn_degrees(SpeedPercent(speedPercentage), degrees, use_gyro=False,brake=False,block=False)
-        self.get_information()
+        self.mfdiff.turn_degrees(SpeedPercent(speedPercentage), degrees, use_gyro=False,brake=True,block=False)
+        print("Turning", degrees, "speed", speedPercentage)
+
+        #self.get_information()
         #self.mfdiff.wait_until_not_moving()
         socket.sendall("done".encode())
 

@@ -51,10 +51,10 @@ def handle_connection(conn, addr):
 
             if ready:
                 #time for last iteration:
-                print("Time for last iteration: ", time.time() - start_time)
+                #print("Time for last iteration: ", time.time() - start_time)
                 start_time = time.time()
                 data = conn.recv(100000)
-                print("Data received", data)
+                #print("Data received", data)
                 data = data.decode()
                 data = data.split("}{")
                 try:

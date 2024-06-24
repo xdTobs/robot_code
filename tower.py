@@ -43,6 +43,7 @@ class Tower(BaseRobot):
 
         if command == "belt":
             self.belt_motor.on(0,SpeedPercent(speedPercentage))
+            
         elif command == "beltstop":
            self.belt_motor.off()
         
